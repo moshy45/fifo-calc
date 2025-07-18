@@ -9,19 +9,12 @@ with st.sidebar:
 
         ### Usage
         Please get and upload an Excel/CSV file from your financial institution with records of all historical transactions.   
-        Your file must contain a columns with a header for each of the following: Date, Transaction Type, Quantity, Price, and a unique Identifier for the product. 
+        Your file must contain a columns with a header for each of the following: Date, Transaction Type, Quantity, Price, and a unique identifier for the product. 
         
         Sales with no recorded purchase will be marked as 'Unknown'.
+                
+        """)
 
-
-        ### Date Format Help
-        Use Python datetime formatting:
-        - `%Y-%m-%d` → 2024-07-18
-        - `%d/%m/%Y` → 18/07/2024
-        - `%m-%d-%Y` → 07-18-2024
-
-        [See full format reference](https://docs.python.org/3/library/datetime.html#strftime-and-strptime-format-codes)
-    """)
     st.markdown("---")
     st.markdown(
         '<h6>Made in &nbsp<img src="https://streamlit.io/images/brand/streamlit-mark-color.png" alt="Streamlit logo" height="16">&nbsp by <a href="https://twitter.com/_mbernstein">@_mbernstein</a></h6>',
@@ -31,6 +24,17 @@ with st.sidebar:
         '<div style="margin-top: 0.75em;"><a href="https://coff.ee/mbernstein" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/default-orange.png" alt="Buy Me A Coffee" height="41" width="174"></a></div>',
         unsafe_allow_html=True,
     )
+
+    st.markdown("---")
+    st.markdown("""
+        ### Date Format Help
+        Use Python datetime formatting:
+        - `%Y-%m-%d` → 2024-07-18
+        - `%d/%m/%Y` → 18/07/2024
+        - `%m-%d-%Y` → 07-18-2024
+
+        [See full format reference](https://docs.python.org/3/library/datetime.html#strftime-and-strptime-format-codes)
+    """)
 
     st.markdown("---")
     st.markdown("*This tool was created for your convenience, the creator accepts no responsibility for the accuracy of the results. Your data is never saved.*")

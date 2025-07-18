@@ -62,9 +62,21 @@ if uploaded_file:
     type_col = st.selectbox("Transaction type column (Buy/Sell)", df.columns)
     qty_col = st.selectbox("Quantity column", df.columns)
     price_col = st.selectbox("Price per unit column", df.columns)
-    ticker_col = st.selectbox("Identifier column", df.columns)
+    id_col = st.selectbox("Identifier column", df.columns)
     currency_col = st.selectbox("Currency column (optional)", ['<None>'] + list(df.columns))
-    id_cols = st.multiselect("Additional identification columns (e.g., Ticker, Name)", df.columns)
+    extra_id_cols = st.multiselect("Additional identification columns (e.g., Ticker, Name)", df.columns)
+
+    # Check for missing values in selected columns
+    required_cols = [id_col, date_col, type_col, qty_col, price_col]
+    if currency_col != '<None>':
+        required_cols.append(currency_col)
+    required_cols += extra_id_cols
+
+    missing_rows = df[required_cols].isnull().any(axis=1)
+    num_missing = missing_rows.sum()
+    if num_missing > 0:
+        st.markdown(f"<span style='color:red'>Warning: {num_missing} row(s) have missing values in the selected columns and will be skipped.</span>", unsafe_allow_html=True)
+        df = df[~missing_rows]
 
     # Rounding option
     round_gains = st.checkbox("Round output Gain/Loss to 2 decimal places", True)
@@ -97,12 +109,8 @@ if uploaded_file:
                 df[date_col] = pd.to_datetime(df[date_col], errors='coerce')
 
             df = df.sort_values(by=date_col)
-
-            if ticker_col == '<None>':
-                df['Ticker'] = 'ALL'
-            else:
-                df['Ticker'] = df[ticker_col]
-
+            df['Identifier'] = df[id_col]
+            
             has_currency = currency_col != '<None>'
             if has_currency:
                 df['Currency'] = df[currency_col]
@@ -111,19 +119,19 @@ if uploaded_file:
 
             results = []
 
-            for (ticker, currency), group in df.groupby(['Ticker', 'Currency']):
+            for (identifier, currency), group in df.groupby(['Identifier', 'Currency']):
                 fifo_queue = deque()
                 for _, row in group.iterrows():
                     try:
                         date = row[date_col]
                         t_type = row[type_col]
-                        qty = float(row[qty_col].replace(',', '') if isinstance(row[qty_col], str) else row[qty_col])
+                        qty = abs(float(row[qty_col].replace(',', '') if isinstance(row[qty_col], str) else row[qty_col]))
                         price = float(row[price_col].replace(',', '') if isinstance(row[price_col], str) else row[price_col])
                     except Exception as e:
                         st.warning(f"Skipping row due to invalid data: {e}")
                         continue
 
-                    identifiers = {col: row[col] for col in id_cols}
+                    identifiers = {col: row[col] for col in extra_id_cols}
 
                     if t_type in buy_vals:
                         fifo_queue.append([qty, price, date])
@@ -155,7 +163,7 @@ if uploaded_file:
 
                         results.append({
                             'Date': date,
-                            'Ticker': ticker,
+                            'Identifier': identifier,
                             'Currency': currency,
                             'Sell Price': price,
                             'Sell Qty': qty,
@@ -172,7 +180,7 @@ if uploaded_file:
         for row in results:
             for lot in row['Matched Lots']:
                 base = {
-                    'Ticker': row['Ticker'],
+                    'Identifier': row['Identifier'],
                     'Buy Date': lot[2].strftime(output_date_format) if isinstance(lot[2], pd.Timestamp) else lot[2],
                     'Buy Price': lot[1],
                     'Sell Date': row['Date'].strftime(output_date_format) if pd.notnull(row['Date']) else 'Invalid Date',
@@ -183,7 +191,7 @@ if uploaded_file:
                 }
                 if has_currency:
                     base['Currency'] = row['Currency']
-                for col in id_cols:
+                for col in extra_id_cols:
                     base[col] = row.get(col, '')
                 expanded_results.append(base)
 

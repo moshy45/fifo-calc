@@ -9,6 +9,8 @@ with st.sidebar:
 
         ### Usage
         Please get and upload an Excel/CSV file from your financial institution with records of all historical transactions.   
+        Your file must contain a columns with a header for each of the following: Date, Transaction Type, Quantity, Price, and a unique Identifier for the product. 
+        
         Sales with no recorded purchase will be marked as 'Unknown'.
 
 
@@ -31,7 +33,7 @@ with st.sidebar:
     )
 
     st.markdown("---")
-    st.markdown("*This tool was created for your convenience, the creator accepts no responsibility for the accuracy of the results.*")
+    st.markdown("*This tool was created for your convenience, the creator accepts no responsibility for the accuracy of the results. Your data is never saved.*")
 
 uploaded_file = st.file_uploader("Upload your transaction history (CSV or Excel)", type=["csv", "xlsx"])
 
@@ -115,8 +117,8 @@ if uploaded_file:
                     try:
                         date = row[date_col]
                         t_type = row[type_col]
-                        qty = float(row[qty_col])
-                        price = float(row[price_col])
+                        qty = float(row[qty_col].replace(',', '') if isinstance(row[qty_col], str) else row[qty_col])
+                        price = float(row[price_col].replace(',', '') if isinstance(row[price_col], str) else row[price_col])
                     except Exception as e:
                         st.warning(f"Skipping row due to invalid data: {e}")
                         continue

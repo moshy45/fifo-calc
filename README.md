@@ -4,6 +4,8 @@
 
 ## Usage
 Please get and upload an Excel/CSV file from your financial institution with records of all historical transactions.   
+Your file must contain a columns with a header for each of the following: Date, Transaction Type, Quantity, Price, and a unique Identifier for the product. 
+
 Sales with no recorded purchase will be marked as 'Unknown'.
 
 
